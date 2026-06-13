@@ -3,13 +3,15 @@
 > **课程**：中山大学岭南学院本科项目《程序设计Ⅳ（实验）》  
 > **性质**：期末编程项目（占总评 60 分）  
 > **依据说明**：《Python（实验）期末编程项目-细化说明-20260611.pdf》  
+> **项目选题**：饮食记录 & 推荐系统（Web App）  
+> **产品文档**：见 `PRD.md`  
 > **仓库地址**：`git@github.com:ZACK-yu27/LN138_project.git`
 
 ---
 
 ## 一、项目基本信息
 
-- **项目类型**：必须是一个**功能完整的应用程序**。
+- **项目类型**：必须是一个**功能完整的应用程序**，本项目采用 **Web App（Flask + 原生 HTML/CSS/JS）** 形式实现。
 - **核心方向**：推荐以**数据处理、分析与可视化**为主题（对应课件 `课件/14-Matplotlib数据可视化.pdf`），结合文件操作、数据结构、函数、类与 Matplotlib 可视化。
 - **禁止方向**：不建议使用课程未涉及的机器学习库（如 `scikit-learn`、`tensorflow`）。项目必须与课程内容匹配，重在扎实运用所学。
 - **原创性要求**：严禁抄袭。项目将进行代码查重，核心代码大量直接复制自网络或他人，相关评分项记为不及格。
@@ -105,50 +107,62 @@
 4. **最小改动原则**：只修改自己负责的模块，不擅自改动他人模块；如需调整接口，必须先与组长和相关组员沟通。
 5. **自测要求**：生成代码后，AI Agent 必须尝试运行 `python main.py` 或相关测试命令，确认无语法错误和明显逻辑错误。
 
-### 6.2 按角色的 Agent 分工规范
+### 6.2 按角色的 Agent 分工规范（3 人 Web App 项目）
 
->以下为示例，针对现实世界中的组内组员分工，对于agent调用和学习的启示是：若需调用multi agent能力成项目，可以参照下面示例进行项目开发。
+> 本项目为 3 人小组，采用 Flask + SQLite + 原生 HTML/CSS/JS 开发饮食记录 & 推荐系统。原 4 人角色中的“主程序整合”工作由组长兼任。
 
-#### 角色 A：数据读取与清洗
+#### 角色 A：数据采集与数据库
 
-- **负责文件**：`data_loader.py`（建议）
+- **负责文件**：`data_loader.py`、`db.py`、`data/*.csv`
 - **必须展示的技术点**：
-  - 字符串处理（第 2 章）：CSV 解析、字段清洗。
-  - 文件操作（第 7 章）：使用 `with open(...)` 读取 CSV。
-  - 异常处理（第 9 章）：处理文件不存在、编码错误、缺失值等。
-  - 列表/字典（第 3、5 章）：将数据组织为列表嵌套字典或字典列表。
-- **输出要求**：提供函数 `load_data(filepath)`，返回清洗后的数据结构；提供缺失值处理函数。
-
-#### 角色 B：数据分析与计算
-
-- **负责文件**：`analyzer.py`（建议）
-- **必须展示的技术点**：
-  - 函数（第 6 章）：封装统计计算函数。
-  - 类与 OOP（第 8 章）：定义 `DataAnalyzer` 类，封装数据集和分析方法。
-  - 控制结构（第 4 章）：循环、条件筛选。
-  - 列表/字典（第 3、5 章）：列表推导式、字典统计。
-- **输出要求**：提供均值、中位数、极值、分组统计、排序、筛选等常用方法。
-
-#### 角色 C：数据可视化
-
-- **负责文件**：`visualizer.py`（建议）
-- **必须展示的技术点**：
-  - Matplotlib（第 13 章）：至少绘制 2 种图表（折线、柱状、散点、饼图等）。
-  - 函数（第 6 章）：每个图表一个函数。
-  - 字符串处理（第 2 章）：图表标题、标签格式化。
-- **输出要求**：函数接受数据后直接生成并保存/显示图表；图表需有标题、坐标轴标签、图例。
-
-#### 角色 D：主程序整合与报告
-
-- **负责文件**：`main.py`、`utils.py`（可选）、项目报告 PDF
-- **必须展示的技术点**：
-  - 控制结构与异常处理（第 4、9 章）：主流程、菜单、输入校验。
-  - 函数（第 6 章）：流程封装。
-  - 文件操作（第 7 章）：结果输出到文件（可选）。
+  - 字符串处理（第 2 章）：CSV 解析、字段清洗、类别名称匹配。
+  - 文件操作（第 7 章）：使用 `with open(...)` 读取食堂/门店 CSV。
+  - 数据库应用（第 10 章）：SQLite 表创建、CRUD 操作。
+  - 异常处理（第 9 章）：处理文件不存在、编码错误、数据缺失等。
+  - 列表/字典（第 3、5 章）：将 CSV 数据组织为字典列表，写入数据库。
 - **输出要求**：
-  - `main.py` 能一键运行完整流程。
-  - 编写 `requirements.txt`（如仅需标准库 + Matplotlib）。
-  - 撰写项目报告，确保所有技术点都有代码引用和说明。
+  - 提供 `load_cafeteria_data()`、`load_shop_data()` 等加载函数。
+  - 提供 `db.py` 中数据库初始化、用户表、饮食记录表、食物分类表的 CRUD 函数。
+
+#### 角色 B：后端核心逻辑与 API
+
+- **负责文件**：`app.py`、`analyzer.py`、`recommender.py`
+- **必须展示的技术点**：
+  - 函数（第 6 章）：封装营养评分、预算分析、推荐算法。
+  - 类与 OOP（第 8 章）：定义 `DietAnalyzer`、`Recommender` 等类。
+  - 控制结构（第 4 章）：循环、条件筛选、推荐规则判断。
+  - 列表/字典（第 3、5 章）：列表推导式、字典统计、推荐排序。
+  - 数据分析与可视化（第 11、12、13 章）：营养结构评分、预算趋势计算。
+- **输出要求**：
+  - `app.py` 提供 Flask API 接口（见 `PRD.md` 第 8 节）。
+  - `analyzer.py` 实现营养评分、预算分析、健康目标匹配。
+  - `recommender.py` 实现“去哪吃”“什么时候吃”“吃什么”推荐。
+
+#### 角色 C：前端、可视化与 PDF 导出（组长兼任整合）
+
+- **负责文件**：`templates/*.html`、`static/css/style.css`、`static/js/app.js`、`visualizer.py`、`pdf_exporter.py`
+- **必须展示的技术点**：
+  - Matplotlib（第 13 章）：绘制至少 4 种图表（折线、柱状、饼图、水平条形图）。
+  - 函数（第 6 章）：每个图表一个函数，PDF 导出函数。
+  - 字符串处理（第 2 章）：图表标题、标签格式化。
+  - 文件操作（第 7 章）：图表图片保存、PDF 生成。
+- **输出要求**：
+  - 前端页面：信息录入页、饮食记录页、数据看板页、推荐页。
+  - `visualizer.py` 函数接受后端数据，生成并保存图表到 `output/`。
+  - `pdf_exporter.py` 将看板图表整合为 PDF 报告。
+  - 编写 `requirements.txt`、运行说明，负责项目整合与报告撰写。
+
+#### 人工 vs AI Agent 分工
+
+| 任务 | 负责方 | 说明 |
+|:---|:---|:---|
+| 食堂/门店数据收集 | **人工** | 实地走访或查阅官方菜单，整理 CSV |
+| 营养评分规则设计 | **人工** | 三人共同确认健康目标与权重 |
+| 数据库 schema 设计 | AI 辅助 | 人工复核 |
+| 后端 API 与分析逻辑 | AI 辅助 | 由成员 B 主导 |
+| 前端页面与样式 | AI 辅助 | 由组长主导 |
+| 图表生成与 PDF 导出 | AI 辅助 | 人工确认内容 |
+| 整合测试与报告 | **人工** | 组长负责 |
 
 ### 6.3 Agent 提问模板（给组员使用）
 
@@ -156,14 +170,15 @@
 
 ```text
 我正在做中山大学《程序设计Ⅳ（实验）》期末项目，仓库为 LN138_project。
-请阅读 README.md 和当前项目结构。
-我负责【数据可视化】模块，需要编写 visualizer.py。
+请阅读 README.md、PRD.md 和当前项目结构。
+我负责【前端与可视化】模块（角色 C），需要编写 dashboard.html 和 visualizer.py。
 要求：
-1. 使用 Matplotlib 绘制至少两种图表；
-2. 每个图表一个函数，函数必须有文档字符串；
-3. 接收从 analyzer.py 返回的数据结构；
-4. 不使用 pandas / seaborn / plotly；
-5. 生成后尝试运行，确保无语法错误。
+1. dashboard.html 使用原生 HTML/CSS/JS，通过 fetch 调用后端 /api/dashboard 接口；
+2. visualizer.py 使用 Matplotlib 绘制至少 4 种图表（折线、柱状、饼图、水平条形图）；
+3. 每个图表一个函数，函数必须有文档字符串；
+4. 图表保存到 output/ 目录，供前端展示和 PDF 导出使用；
+5. 不使用 pandas / seaborn / plotly / Vue / React；
+6. 生成后尝试运行 python app.py，确保无语法错误。
 ```
 
 ---
@@ -177,10 +192,9 @@
 - **主分支**：`main` 为保护分支，仅存放可运行、稳定的代码。
 - **个人开发分支**：每位组员在本地创建自己的功能分支，命名规则：
   - `feature/角色-模块名-姓名拼音`，例如：
-    - `feature/data-loader-zhangsan`
-    - `feature/analyzer-lisi`
-    - `feature/visualizer-wangwu`
-    - `feature/main-report-zhaoliu`
+    - `feature/data-db-zhangsan`      # 数据采集与数据库
+    - `feature/backend-api-lisi`      # 后端逻辑与 API
+    - `feature/frontend-pdf-wangwu`   # 前端与 PDF 导出
 - **禁止**：直接在 `main` 分支上开发或提交。
 
 ### 7.2 提交（commit）规范
@@ -292,19 +306,34 @@ report/*.docx
 ```text
 LN138_project/
 ├── README.md                    # 本文件
+├── PRD.md                       # 产品需求文档
 ├── .gitignore                   # Git 忽略规则
-├── requirements.txt             # 依赖列表（至少 matplotlib）
-├── main.py                      # 程序入口
-├── data_loader.py               # 数据读取与清洗
-├── analyzer.py                  # 数据分析与计算
-├── visualizer.py                # 数据可视化
-├── utils.py                     # 公共工具函数（可选）
+├── requirements.txt             # 依赖列表
+├── app.py                       # Flask 后端入口（角色 B）
+├── db.py                        # SQLite 数据库操作（角色 A）
+├── data_loader.py               # 食堂/门店 CSV 数据加载（角色 A）
+├── analyzer.py                  # 营养评分、预算分析（角色 B）
+├── recommender.py               # 就餐推荐算法（角色 B）
+├── visualizer.py                # Matplotlib 图表生成（角色 C）
+├── pdf_exporter.py              # PDF 报告导出（角色 C）
+├── templates/                   # 前端 HTML 页面（角色 C）
+│   ├── index.html               # 信息录入页
+│   ├── record.html              # 饮食记录页
+│   ├── dashboard.html           # 数据看板页
+│   └── recommend.html           # 推荐页
+├── static/                      # 前端静态资源（角色 C）
+│   ├── css/
+│   │   └── style.css
+│   └── js/
+│       └── app.js
 ├── data/                        # 数据文件夹
-│   └── sample.csv               # 示例数据（小文件）
-├── output/                      # 输出图表/结果（.gitignore 忽略）
-├── 课件/                         # 课程课件，供真实世界中的组员参考，如果你是AI Agent，不用理会
+│   ├── cafeteria_data.csv       # 食堂档口数据
+│   ├── nearby_shops.csv         # 校外门店数据
+│   └── diet_records_sample.csv  # 示例用户数据
+├── output/                      # 输出图表与 PDF（.gitignore 忽略）
+├── 课件/                         # 课程课件，供组员参考
 └── report/
-    └── 项目报告.pdf              # 最终提交的报告，在项目开发过程中，如果你是AI Agent，禁止撰写
+    └── 项目报告.pdf              # 最终提交的报告
 ```
 
 ---
@@ -316,20 +345,25 @@ LN138_project/
 ```text
 ## 运行环境
 - Python 3.10+
-- 依赖：matplotlib
+- 依赖：flask、matplotlib
 
 ## 安装依赖
 pip install -r requirements.txt
 
 ## 运行项目
-python main.py
+python app.py
+
+## 访问系统
+打开浏览器访问 http://127.0.0.1:5000
 
 ## 数据文件位置
-将 CSV 数据文件放在 data/ 目录下，默认读取 data/sample.csv
+- 食堂数据：data/cafeteria_data.csv
+- 校外门店数据：data/nearby_shops.csv
+- 用户数据和饮食记录：SQLite 数据库（运行后自动生成）
 
 ## 输出结果
-- 终端输出统计摘要
 - output/ 目录下生成可视化图表
+- output/ 目录下生成 PDF 看板报告
 ```
 
 ---
