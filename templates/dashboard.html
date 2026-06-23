@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食记录 & 推荐系统 - 数据看板</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="/" class="nav-brand">饮食记录 & 推荐系统</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">信息录入</a>
+            <a href="/record" class="nav-link">饮食记录</a>
+            <a href="/dashboard" class="nav-link active">数据看板</a>
+            <a href="/recommend" class="nav-link">推荐</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- 指标卡片 -->
+        <div class="metric-grid" id="metrics">
+            <div class="metric-card animate-fade">
+                <div class="metric-value" id="totalCost">--</div>
+                <div class="metric-label">本月总支出（元）</div>
+            </div>
+            <div class="metric-card animate-fade stagger-1">
+                <div class="metric-value" id="remainingBudget">--</div>
+                <div class="metric-label">剩余预算（元）</div>
+            </div>
+            <div class="metric-card animate-fade stagger-2">
+                <div class="metric-value" id="nutritionScore">--</div>
+                <div class="metric-label">营养评分</div>
+            </div>
+            <div class="metric-card animate-fade stagger-3">
+                <div class="metric-value" id="totalMeals">--</div>
+                <div class="metric-label">本月总餐次</div>
+            </div>
+        </div>
+
+        <!-- 图表 -->
+        <div class="flex gap-2 flex-wrap">
+            <div class="chart-container animate-fade" style="flex: 1; min-width: 300px;">
+                <div class="card-header">预算使用</div>
+                <img id="budgetChart" src="" alt="预算条形图" style="display: none;">
+                <div id="budgetFallback" class="text-center" style="padding: 2rem;">暂无数据</div>
+            </div>
+            <div class="chart-container animate-fade stagger-1" style="flex: 1; min-width: 300px;">
+                <div class="card-header">餐次分布</div>
+                <img id="mealPieChart" src="" alt="餐次饼图" style="display: none;">
+                <div id="mealPieFallback" class="text-center" style="padding: 2rem;">暂无数据</div>
+            </div>
+        </div>
+
+        <div class="flex gap-2 flex-wrap mt-2">
+            <div class="chart-container animate-fade" style="flex: 1; min-width: 300px;">
+                <div class="card-header">营养结构对比</div>
+                <img id="nutritionChart" src="" alt="营养对比图" style="display: none;">
+                <div id="nutritionFallback" class="text-center" style="padding: 2rem;">暂无数据</div>
+            </div>
+            <div class="chart-container animate-fade stagger-1" style="flex: 1; min-width: 300px;">
+                <div class="card-header">热量趋势</div>
+                <img id="calorieChart" src="" alt="热量趋势图" style="display: none;">
+                <div id="calorieFallback" class="text-center" style="padding: 2rem;">暂无数据</div>
+            </div>
+        </div>
+
+        <!-- 健康建议 -->
+        <div class="card animate-fade mt-2">
+            <div class="card-header">健康建议</div>
+            <div id="suggestions">
+                <p class="text-center">加载中...</p>
+            </div>
+        </div>
+
+        <!-- 导出按钮 -->
+        <div class="text-center mt-3 mb-3">
+            <button class="btn" onclick="exportReport()">导出 PDF 报告</button>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        async function loadDashboard() {
+            if (!currentUser) {
+                document.getElementById('metrics').innerHTML = '<div class="card" style="grid-column: 1 / -1;"><p class="text-center">请先设置用户信息</p></div>';
+                return;
+            }
+            try {
+                const data = await getDashboard(currentUser.id);
+                const stats = data.statistics || {};
+                const budget = data.budget || {};
+                const nutrition = data.nutrition || {};
+                const calorieTrend = data.calorie_trend || [];
+
+                // 指标卡片
+                document.getElementById('totalCost').textContent = formatMoney(stats.total_cost || 0);
+                document.getElementById('remainingBudget').textContent = formatMoney(budget.remaining || 0);
+                document.getElementById('nutritionScore').textContent = nutrition.score !== undefined ? nutrition.score : '--';
+                document.getElementById('totalMeals').textContent = stats.total_meals || 0;
+
+                // 健康建议
+                const suggestions = nutrition.suggestions || [];
+                const sugDiv = document.getElementById('suggestions');
+                if (suggestions.length > 0) {
+                    sugDiv.innerHTML = suggestions.map(s => `<div class="recommend-reason mb-1">${s}</div>`).join('');
+                } else {
+                    sugDiv.innerHTML = '<p class="text-center">暂无建议</p>';
+                }
+
+                // 图表加载（尝试从 output/ 目录加载）
+                const userId = currentUser.id;
+                const chartPaths = {
+                    budget: `output/user_${userId}_budget_bar.png`,
+                    mealPie: `output/user_${userId}_meal_pie.png`,
+                    nutrition: `output/user_${userId}_nutrition_compare.png`,
+                    calorie: `output/user_${userId}_calorie_trend.png`
+                };
+
+                loadChart('budgetChart', 'budgetFallback', chartPaths.budget);
+                loadChart('mealPieChart', 'mealPieFallback', chartPaths.mealPie);
+                loadChart('nutritionChart', 'nutritionFallback', chartPaths.nutrition);
+                loadChart('calorieChart', 'calorieFallback', chartPaths.calorie);
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        function loadChart(imgId, fallbackId, path) {
+            const img = document.getElementById(imgId);
+            const fallback = document.getElementById(fallbackId);
+            img.src = path + '?t=' + Date.now();  // 避免缓存
+            img.onload = () => { img.style.display = 'block'; fallback.style.display = 'none'; };
+            img.onerror = () => { img.style.display = 'none'; fallback.style.display = 'block'; };
+        }
+
+        function exportReport() {
+            if (!currentUser) {
+                showToast('请先设置用户信息', 'error');
+                return;
+            }
+            exportPDF(currentUser.id);
+            showToast('正在导出 PDF...', 'success');
+        }
+
+        loadDashboard();
+    </script>
+</body>
+</html>

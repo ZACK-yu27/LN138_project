@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食记录 & 推荐系统 - 就餐推荐</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="/" class="nav-brand">饮食记录 & 推荐系统</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">信息录入</a>
+            <a href="/record" class="nav-link">饮食记录</a>
+            <a href="/dashboard" class="nav-link">数据看板</a>
+            <a href="/recommend" class="nav-link active">推荐</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card animate-fade">
+            <div class="card-header">推荐设置</div>
+            <div class="flex gap-2 flex-wrap">
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label class="form-label">当前餐次</label>
+                    <select class="form-select" id="mealSelect">
+                        <option value="早餐">早餐</option>
+                        <option value="午餐" selected>午餐</option>
+                        <option value="晚餐">晚餐</option>
+                        <option value="加餐">加餐</option>
+                    </select>
+                </div>
+                <div class="form-group" style="flex: 1; min-width: 150px;">
+                    <label class="form-label">目标食堂（可选）</label>
+                    <input type="text" class="form-input" id="canteenInput" placeholder="如：学一">
+                </div>
+                <div class="form-group flex flex-center" style="min-width: 100px;">
+                    <button class="btn" onclick="loadRecommendations()" id="refreshBtn">刷新推荐</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 去哪吃 -->
+        <div class="card animate-fade stagger-1">
+            <div class="card-header">去哪吃</div>
+            <div id="whereRecommend">
+                <p class="text-center">点击刷新推荐获取结果</p>
+            </div>
+        </div>
+
+        <!-- 什么时候吃 -->
+        <div class="card animate-fade stagger-2">
+            <div class="card-header">什么时候吃</div>
+            <div id="whenRecommend">
+                <p class="text-center">点击刷新推荐获取结果</p>
+            </div>
+        </div>
+
+        <!-- 吃什么 -->
+        <div class="card animate-fade stagger-3">
+            <div class="card-header">吃什么</div>
+            <div id="whatRecommend">
+                <p class="text-center">点击刷新推荐获取结果</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        async function loadRecommendations() {
+            if (!currentUser) {
+                showToast('请先设置用户信息', 'error');
+                return;
+            }
+            const btn = document.getElementById('refreshBtn');
+            const originalText = btn.textContent;
+            showLoading(btn);
+
+            try {
+                const meal = document.getElementById('mealSelect').value;
+                const canteen = document.getElementById('canteenInput').value;
+                const data = await getRecommendations(currentUser.id, meal, canteen);
+
+                // 去哪吃
+                const whereList = data.where || [];
+                const whereDiv = document.getElementById('whereRecommend');
+                if (whereList.length > 0) {
+                    whereDiv.innerHTML = whereList.map((item, i) => `
+                        <div class="recommend-card animate-scale stagger-${i+1}">
+                            <div class="recommend-title">${item.name}</div>
+                            <div class="recommend-meta">${item.location} (${item.location_type}) · ${formatMoney(item.price)}元</div>
+                            <div class="recommend-reason">${item.reason}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    whereDiv.innerHTML = '<p class="text-center">暂无推荐</p>';
+                }
+
+                // 什么时候吃
+                const when = data.when || {};
+                const whenDiv = document.getElementById('whenRecommend');
+                if (when.suggestion) {
+                    whenDiv.innerHTML = `
+                        <div class="recommend-card animate-scale">
+                            <div class="recommend-title">时间建议</div>
+                            <div class="recommend-meta">${when.suggestion}</div>
+                            <div class="recommend-reason">最佳就餐时间：${when.best_time || '随时'}</div>
+                        </div>
+                    `;
+                } else {
+                    whenDiv.innerHTML = '<p class="text-center">暂无高峰期数据</p>';
+                }
+
+                // 吃什么
+                const whatList = data.what || [];
+                const whatDiv = document.getElementById('whatRecommend');
+                if (whatList.length > 0) {
+                    whatDiv.innerHTML = whatList.map((item, i) => `
+                        <div class="recommend-card animate-scale stagger-${i+1}">
+                            <div class="recommend-title">${item.combo_name}</div>
+                            <div class="recommend-meta">${formatMoney(item.total_price)}元 · 估算热量 ${item.nutrition.estimated_calorie}kcal</div>
+                            <div class="recommend-reason">${item.reason}</div>
+                        </div>
+                    `).join('');
+                } else {
+                    whatDiv.innerHTML = '<p class="text-center">暂无推荐</p>';
+                }
+
+            } catch (err) {
+                showToast(err.message, 'error');
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        }
+
+        // 页面加载时自动获取推荐
+        if (currentUser) {
+            loadRecommendations();
+        }
+    </script>
+</body>
+</html>

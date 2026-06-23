@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食记录 & 推荐系统 - 饮食记录</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="/" class="nav-brand">饮食记录 & 推荐系统</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link">信息录入</a>
+            <a href="/record" class="nav-link active">饮食记录</a>
+            <a href="/dashboard" class="nav-link">数据看板</a>
+            <a href="/recommend" class="nav-link">推荐</a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card animate-fade">
+            <div class="card-header">添加饮食记录</div>
+            <form id="recordForm">
+                <div class="flex gap-2 flex-wrap">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label class="form-label">日期</label>
+                        <input type="date" class="form-input" name="date" required>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 120px;">
+                        <label class="form-label">餐次</label>
+                        <select class="form-select" name="meal" required>
+                            <option value="早餐">早餐</option>
+                            <option value="午餐" selected>午餐</option>
+                            <option value="晚餐">晚餐</option>
+                            <option value="加餐">加餐</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label class="form-label">就餐地点</label>
+                        <select class="form-select" name="location_type" required>
+                            <option value="食堂">食堂</option>
+                            <option value="外卖">外卖</option>
+                            <option value="校外门店">校外门店</option>
+                            <option value="便利店">便利店</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 150px;">
+                        <label class="form-label">具体地点</label>
+                        <input type="text" class="form-input" name="location_name" placeholder="如：学一食堂">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">食物名称</label>
+                    <input type="text" class="form-input" name="food_name" placeholder="如：黄焖鸡米饭" required>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    <div class="form-group" style="flex: 1; min-width: 120px;">
+                        <label class="form-label">价格（元）</label>
+                        <input type="number" class="form-input" name="price" placeholder="15.5" min="0" step="0.1" required>
+                    </div>
+                    <div class="form-group" style="flex: 1; min-width: 120px;">
+                        <label class="form-label">是否外卖</label>
+                        <select class="form-select" name="is_takeout">
+                            <option value="0" selected>否</option>
+                            <option value="1">是</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">食物分类与分量（拳头大小）</label>
+                    <div id="itemsContainer" class="flex gap-2 flex-wrap">
+                        <div class="flex gap-1 flex-center" style="flex: 1; min-width: 200px;">
+                            <select class="form-select" name="item_category" style="flex: 1;">
+                                <option value="主食">主食</option>
+                                <option value="蔬菜">蔬菜</option>
+                                <option value="肉类">肉类</option>
+                                <option value="水果">水果</option>
+                                <option value="饮料">饮料</option>
+                                <option value="零食">零食</option>
+                                <option value="其他">其他</option>
+                            </select>
+                            <input type="number" class="form-input" name="item_fist" placeholder="拳数" min="0" max="5" step="0.5" value="1" style="width: 80px;">
+                            <button type="button" class="btn btn-sm btn-secondary" onclick="addItemRow()">+</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block" id="submitBtn">添加记录</button>
+            </form>
+        </div>
+
+        <div class="card animate-fade stagger-1">
+            <div class="card-header">今日记录</div>
+            <div class="table-container">
+                <table class="table" id="recordsTable">
+                    <thead>
+                        <tr>
+                            <th>日期</th>
+                            <th>餐次</th>
+                            <th>地点</th>
+                            <th>食物</th>
+                            <th>价格</th>
+                            <th>分类</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recordsBody">
+                        <tr><td colspan="7" class="text-center">加载中...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        let itemCount = 1;
+        function addItemRow() {
+            const container = document.getElementById('itemsContainer');
+            const div = document.createElement('div');
+            div.className = 'flex gap-1 flex-center';
+            div.style.cssText = 'flex: 1; min-width: 200px; margin-top: 0.5rem;';
+            div.innerHTML = `
+                <select class="form-select" name="item_category" style="flex: 1;">
+                    <option value="主食">主食</option>
+                    <option value="蔬菜">蔬菜</option>
+                    <option value="肉类">肉类</option>
+                    <option value="水果">水果</option>
+                    <option value="饮料">饮料</option>
+                    <option value="零食">零食</option>
+                    <option value="其他">其他</option>
+                </select>
+                <input type="number" class="form-input" name="item_fist" placeholder="拳数" min="0" max="5" step="0.5" value="1" style="width: 80px;">
+                <button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove()">-</button>
+            `;
+            container.appendChild(div);
+            itemCount++;
+        }
+
+        document.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
+
+        async function loadRecords() {
+            if (!currentUser) {
+                document.getElementById('recordsBody').innerHTML = '<tr><td colspan="7" class="text-center">请先设置用户信息</td></tr>';
+                return;
+            }
+            try {
+                const records = await getRecords(currentUser.id);
+                const tbody = document.getElementById('recordsBody');
+                if (records.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center">暂无记录</td></tr>';
+                    return;
+                }
+                tbody.innerHTML = records.map(r => {
+                    const items = r.items || [];
+                    const itemsText = items.map(i => `${i.category} ${i.fist_count}拳`).join('、');
+                    return `
+                        <tr class="animate-slide">
+                            <td>${r.date}</td>
+                            <td>${r.meal}</td>
+                            <td>${r.location_name || r.location_type}</td>
+                            <td>${r.food_name}</td>
+                            <td>${formatMoney(r.price)}</td>
+                            <td>${itemsText || '-'}</td>
+                            <td>
+                                <button class="btn btn-sm btn-outline" onclick="deleteRecordItem(${r.id})">删除</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                document.getElementById('recordsBody').innerHTML = `<tr><td colspan="7" class="text-center">加载失败: ${err.message}</td></tr>`;
+            }
+        }
+
+        async function deleteRecordItem(recordId) {
+            if (!confirm('确定删除这条记录吗？')) return;
+            try {
+                await deleteRecord(recordId);
+                showToast('删除成功', 'success');
+                loadRecords();
+            } catch (err) {
+                showToast(err.message, 'error');
+            }
+        }
+
+        document.getElementById('recordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!currentUser) {
+                showToast('请先设置用户信息', 'error');
+                return;
+            }
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.textContent;
+            showLoading(btn);
+
+            try {
+                const formData = new FormData(e.target);
+                const categories = formData.getAll('item_category');
+                const fists = formData.getAll('item_fist');
+                const items = [];
+                for (let i = 0; i < categories.length; i++) {
+                    if (categories[i]) {
+                        items.push({
+                            category: categories[i],
+                            fist_count: parseFloat(fists[i] || 0)
+                        });
+                    }
+                }
+
+                const recordData = {
+                    user_id: currentUser.id,
+                    date: formData.get('date'),
+                    meal: formData.get('meal'),
+                    location_type: formData.get('location_type'),
+                    location_name: formData.get('location_name'),
+                    food_name: formData.get('food_name'),
+                    price: parseFloat(formData.get('price')),
+                    is_takeout: parseInt(formData.get('is_takeout')),
+                    items: items
+                };
+
+                await createRecord(recordData);
+                showToast('记录添加成功', 'success');
+                e.target.reset();
+                document.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
+                // 保留第一个分类行，移除多余的
+                const container = document.getElementById('itemsContainer');
+                while (container.children.length > 1) {
+                    container.removeChild(container.lastChild);
+                }
+                loadRecords();
+            } catch (err) {
+                showToast(err.message || '添加失败', 'error');
+            } finally {
+                hideLoading(btn, originalText);
+            }
+        });
+
+        loadRecords();
+    </script>
+</body>
+</html>

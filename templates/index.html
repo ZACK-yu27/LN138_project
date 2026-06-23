@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>饮食记录 & 推荐系统 - 欢迎使用</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <nav class="nav-bar">
+        <a href="/" class="nav-brand">饮食记录 & 推荐系统</a>
+        <div class="nav-links">
+            <a href="/" class="nav-link active">信息录入</a>
+            <a href="/record" class="nav-link">饮食记录</a>
+            <a href="/dashboard" class="nav-link">数据看板</a>
+            <a href="/recommend" class="nav-link">推荐</a>
+        </div>
+    </nav>
+
+    <div class="container container-narrow animate-fade">
+        <div class="card mt-3">
+            <div class="card-header">欢迎使用饮食记录 & 推荐系统</div>
+            <p class="mb-2">首次使用请先设置您的个人信息，系统将据此为您提供个性化的营养分析和就餐推荐。</p>
+        </div>
+
+        <div class="card animate-fade stagger-1">
+            <div class="card-header">设置个人信息</div>
+            <form id="userForm">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" name="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">月度餐饮预算（元）</label>
+                    <input type="number" class="form-input" name="monthly_budget" placeholder="例如：1200" min="0" step="100" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">健康目标</label>
+                    <select class="form-select" name="health_goal" required>
+                        <option value="维持身材" selected>维持身材</option>
+                        <option value="减肥">减肥</option>
+                        <option value="健身增重">健身增重</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">饮食偏好（可选，多选）</label>
+                    <div class="flex gap-2 flex-wrap" style="margin-top: 0.5rem;">
+                        <label class="flex flex-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="preferences" value="偏辣"> 偏辣
+                        </label>
+                        <label class="flex flex-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="preferences" value="清淡"> 清淡
+                        </label>
+                        <label class="flex flex-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="preferences" value="少油"> 少油
+                        </label>
+                        <label class="flex flex-center gap-1" style="cursor: pointer;">
+                            <input type="checkbox" name="preferences" value="素食"> 素食
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-block" id="submitBtn">保存并开始使用</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+    <script>
+        document.getElementById('userForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('submitBtn');
+            const originalText = btn.textContent;
+            showLoading(btn);
+
+            try {
+                const formData = new FormData(e.target);
+                const preferences = [];
+                formData.getAll('preferences').forEach(v => preferences.push(v));
+
+                const userData = {
+                    username: formData.get('username'),
+                    monthly_budget: parseFloat(formData.get('monthly_budget')),
+                    health_goal: formData.get('health_goal'),
+                    preferences: preferences
+                };
+
+                await createUser(userData);
+                showToast('设置成功！正在跳转...', 'success');
+                setTimeout(() => window.location.href = '/record', 1000);
+            } catch (err) {
+                showToast(err.message || '保存失败', 'error');
+                hideLoading(btn, originalText);
+            }
+        });
+    </script>
+</body>
+</html>
