@@ -1,0 +1,26 @@
+# Python
+__pycache__/
+*.py[cod]
+*.so
+*.egg-info/
+.env
+.venv/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Database & outputs
+diet_db.sqlite
+output/*.png
+output/*.pdf
+report/*.docx
+report/*.pdf
+*.csv.bak
+*.png.bak
