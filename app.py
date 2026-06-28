@@ -157,6 +157,9 @@ def create_user():
         username = data.get('username', '').strip()
         if not username:
             return _error_response('用户名不能为空')
+        # 若用户名已存在，给出友好提示，避免暴露数据库唯一约束异常
+        if db.get_user_by_name(username):
+            return _error_response('用户名已存在，请直接登录')
         monthly_budget = float(data.get('monthly_budget', 0))
         health_goal = data.get('health_goal', '维持身材')
         preferences = data.get('preferences')
@@ -168,6 +171,30 @@ def create_user():
         return _json_response({'success': True, 'user_id': user_id, 'user': user})
     except Exception as e:
         return _error_response(f'创建用户失败: {str(e)}', 500)
+
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """
+    用户登录（根据用户名查询）。
+
+    请求体 JSON：
+        {"username": str}
+
+    返回：
+        {"success": True, "user": dict}
+    """
+    try:
+        data = request.get_json() or {}
+        username = data.get('username', '').strip()
+        if not username:
+            return _error_response('用户名不能为空')
+        user = db.get_user_by_name(username)
+        if not user:
+            return _error_response('用户不存在，请先注册', 404)
+        return _json_response({'success': True, 'user': user})
+    except Exception as e:
+        return _error_response(f'登录失败: {str(e)}', 500)
 
 
 @app.route('/api/user/<int:user_id>', methods=['GET'])

@@ -61,6 +61,19 @@ async function createUser(userData) {
     return currentUser;
 }
 
+async function loginUser(username) {
+    const result = await apiPost('/api/login', { username });
+    currentUser = result.user;
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    return currentUser;
+}
+
+function logoutUser() {
+    currentUser = null;
+    localStorage.removeItem('currentUser');
+    window.location.href = '/';
+}
+
 async function getUser(userId) {
     const result = await apiGet(`/api/user/${userId}`);
     return result.user;
@@ -160,15 +173,42 @@ function formatMoney(amount) {
 }
 
 // ============================================
-// 页面导航
+// 页面导航（根据登录态动态渲染）
 // ============================================
 function setupNavigation() {
     const currentPath = window.location.pathname;
-    document.querySelectorAll('.nav-link').forEach(link => {
-        if (link.getAttribute('href') === currentPath) {
-            link.classList.add('active');
-        }
-    });
+    const navContainer = document.getElementById('nav-links');
+
+    // 如果页面使用动态导航容器，则按登录态渲染
+    if (navContainer) {
+        renderNavLinks(navContainer, currentPath);
+    } else {
+        // 兼容旧版静态导航：仅高亮当前页
+        document.querySelectorAll('.nav-link').forEach(link => {
+            if (link.getAttribute('href') === currentPath) {
+                link.classList.add('active');
+            }
+        });
+    }
+}
+
+function renderNavLinks(container, currentPath) {
+    const user = currentUser;
+    let html = '';
+
+    if (user && user.id) {
+        // 已登录：显示功能页 + 用户信息/退出
+        html += `<a href="/record" class="nav-link ${currentPath === '/record' ? 'active' : ''}">饮食记录</a>`;
+        html += `<a href="/dashboard" class="nav-link ${currentPath === '/dashboard' ? 'active' : ''}">数据看板</a>`;
+        html += `<a href="/recommend" class="nav-link ${currentPath === '/recommend' ? 'active' : ''}">推荐</a>`;
+        html += `<div class="nav-user">${user.username}</div>`;
+        html += `<button class="nav-logout" onclick="logoutUser()">退出</button>`;
+    } else {
+        // 未登录：仅显示登录/注册入口
+        html += `<a href="/" class="nav-link ${currentPath === '/' ? 'active' : ''}">登录 / 注册</a>`;
+    }
+
+    container.innerHTML = html;
 }
 
 // ============================================
@@ -197,6 +237,14 @@ function validateForm(formData, rules) {
 document.addEventListener('DOMContentLoaded', () => {
     setupNavigation();
 
+    // 受保护页面未登录时自动跳回首页
+    const protectedPaths = ['/record', '/dashboard', '/recommend'];
+    const currentPath = window.location.pathname;
+    if (protectedPaths.includes(currentPath) && !(currentUser && currentUser.id)) {
+        window.location.href = '/';
+        return;
+    }
+
     // 全局错误处理
     window.addEventListener('error', (e) => {
         console.error('JavaScript error:', e.error);
@@ -212,7 +260,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // 导出全局函数供页面脚本使用
 window.AppAPI = {
-    createUser, getUser, updateUser,
+    createUser, loginUser, logoutUser, getUser, updateUser,
     getRecords, createRecord, updateRecord, deleteRecord,
     getDashboard, getNutrition, getBudget,
     getRecommendations, exportPDF,

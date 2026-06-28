@@ -121,6 +121,67 @@ body {
     background: rgba(224, 122, 95, 0.2);
 }
 
+.nav-user {
+    color: var(--primary-light);
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+}
+
+.nav-logout {
+    background: transparent;
+    color: var(--bg-main);
+    border: 2px solid var(--primary-light);
+    padding: 0.5rem 1rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.nav-logout:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+}
+
+/* ---- 注册/登录标签页 ---- */
+.auth-tabs {
+    display: flex;
+    border-bottom: var(--pixel-border) solid var(--border);
+    margin-bottom: 1.5rem;
+}
+
+.auth-tab {
+    flex: 1;
+    padding: 0.75rem;
+    background: var(--bg-main);
+    border: none;
+    border-right: var(--pixel-border) solid var(--border);
+    font-family: inherit;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: var(--transition);
+    color: var(--text-light);
+}
+
+.auth-tab:last-child {
+    border-right: none;
+}
+
+.auth-tab.active {
+    background: var(--primary);
+    color: white;
+}
+
+.auth-tab:hover:not(.active) {
+    background: rgba(224, 122, 95, 0.1);
+    color: var(--text-main);
+}
+
 /* ---- 容器 ---- */
 .container {
     max-width: 1200px;

@@ -3,29 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>饮食记录 & 推荐系统 - 欢迎使用</title>
+    <title>饮食记录 & 推荐系统 - 登录 / 注册</title>
     <link rel="stylesheet" href="/static/css/style.css">
 </head>
 <body>
     <nav class="nav-bar">
         <a href="/" class="nav-brand">饮食记录 & 推荐系统</a>
-        <div class="nav-links">
-            <a href="/" class="nav-link active">信息录入</a>
-            <a href="/record" class="nav-link">饮食记录</a>
-            <a href="/dashboard" class="nav-link">数据看板</a>
-            <a href="/recommend" class="nav-link">推荐</a>
-        </div>
+        <div class="nav-links" id="nav-links"></div>
     </nav>
 
     <div class="container container-narrow animate-fade">
         <div class="card mt-3">
             <div class="card-header">欢迎使用饮食记录 & 推荐系统</div>
-            <p class="mb-2">首次使用请先设置您的个人信息，系统将据此为您提供个性化的营养分析和就餐推荐。</p>
+            <p class="mb-2">首次使用请注册，已有账号请直接登录。</p>
         </div>
 
         <div class="card animate-fade stagger-1">
-            <div class="card-header">设置个人信息</div>
-            <form id="userForm">
+            <!-- 注册 / 登录 标签切换 -->
+            <div class="auth-tabs">
+                <button type="button" class="auth-tab active" id="tab-register" onclick="switchTab('register')">注册</button>
+                <button type="button" class="auth-tab" id="tab-login" onclick="switchTab('login')">登录</button>
+            </div>
+
+            <!-- 注册表单 -->
+            <form id="registerForm">
                 <div class="form-group">
                     <label class="form-label">用户名</label>
                     <input type="text" class="form-input" name="username" placeholder="请输入用户名" required>
@@ -59,16 +60,45 @@
                         </label>
                     </div>
                 </div>
-                <button type="submit" class="btn btn-block" id="submitBtn">保存并开始使用</button>
+                <button type="submit" class="btn btn-block" id="registerBtn">注册并开始使用</button>
+            </form>
+
+            <!-- 登录表单 -->
+            <form id="loginForm" style="display: none;">
+                <div class="form-group">
+                    <label class="form-label">用户名</label>
+                    <input type="text" class="form-input" name="username" placeholder="请输入已注册的用户名" required>
+                </div>
+                <button type="submit" class="btn btn-block" id="loginBtn">登录</button>
             </form>
         </div>
     </div>
 
     <script src="/static/js/app.js"></script>
     <script>
-        document.getElementById('userForm').addEventListener('submit', async (e) => {
+        function switchTab(tab) {
+            const registerForm = document.getElementById('registerForm');
+            const loginForm = document.getElementById('loginForm');
+            const registerTab = document.getElementById('tab-register');
+            const loginTab = document.getElementById('tab-login');
+
+            if (tab === 'register') {
+                registerForm.style.display = 'block';
+                loginForm.style.display = 'none';
+                registerTab.classList.add('active');
+                loginTab.classList.remove('active');
+            } else {
+                registerForm.style.display = 'none';
+                loginForm.style.display = 'block';
+                registerTab.classList.remove('active');
+                loginTab.classList.add('active');
+            }
+        }
+
+        // 注册提交
+        document.getElementById('registerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const btn = document.getElementById('submitBtn');
+            const btn = document.getElementById('registerBtn');
             const originalText = btn.textContent;
             showLoading(btn);
 
@@ -85,13 +115,37 @@
                 };
 
                 await createUser(userData);
-                showToast('设置成功！正在跳转...', 'success');
+                showToast('注册成功！正在跳转...', 'success');
                 setTimeout(() => window.location.href = '/record', 1000);
             } catch (err) {
-                showToast(err.message || '保存失败', 'error');
+                showToast(err.message || '注册失败', 'error');
                 hideLoading(btn, originalText);
             }
         });
+
+        // 登录提交
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('loginBtn');
+            const originalText = btn.textContent;
+            showLoading(btn);
+
+            try {
+                const formData = new FormData(e.target);
+                const username = formData.get('username');
+                await loginUser(username);
+                showToast('登录成功！正在跳转...', 'success');
+                setTimeout(() => window.location.href = '/record', 1000);
+            } catch (err) {
+                showToast(err.message || '登录失败', 'error');
+                hideLoading(btn, originalText);
+            }
+        });
+
+        // 如果已登录，直接进入记录页
+        if (currentUser && currentUser.id) {
+            window.location.href = '/record';
+        }
     </script>
 </body>
 </html>
