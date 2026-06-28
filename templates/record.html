@@ -65,9 +65,12 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">食物分类与分量（拳头大小）</label>
-                    <div id="itemsContainer" class="flex gap-2 flex-wrap">
-                        <div class="flex gap-1 flex-center" style="flex: 1; min-width: 200px;">
-                            <select class="form-select" name="item_category" style="flex: 1;">
+                    <div id="itemsContainer" class="item-rows">
+                        <div class="item-row">
+                            <div class="item-row-header">
+                                <span class="item-row-title">分类 1</span>
+                            </div>
+                            <select class="form-select" name="item_category">
                                 <option value="主食">主食</option>
                                 <option value="蔬菜">蔬菜</option>
                                 <option value="肉类">肉类</option>
@@ -76,10 +79,10 @@
                                 <option value="零食">零食</option>
                                 <option value="其他">其他</option>
                             </select>
-                            <input type="number" class="form-input" name="item_fist" placeholder="拳数" min="0" max="5" step="0.5" value="1" style="width: 80px;">
-                            <button type="button" class="btn btn-sm btn-secondary" onclick="addItemRow()">+</button>
+                            <input type="number" class="form-input" name="item_fist" placeholder="拳数（0–5）" min="0" max="5" step="0.5" value="1">
                         </div>
                     </div>
+                    <button type="button" class="btn btn-sm btn-secondary item-add-btn" onclick="addItemRow()">+ 添加分类</button>
                 </div>
                 <button type="submit" class="btn btn-block" id="submitBtn">添加记录</button>
             </form>
@@ -113,11 +116,15 @@
         let itemCount = 1;
         function addItemRow() {
             const container = document.getElementById('itemsContainer');
+            itemCount++;
             const div = document.createElement('div');
-            div.className = 'flex gap-1 flex-center';
-            div.style.cssText = 'flex: 1; min-width: 200px; margin-top: 0.5rem;';
+            div.className = 'item-row';
             div.innerHTML = `
-                <select class="form-select" name="item_category" style="flex: 1;">
+                <div class="item-row-header">
+                    <span class="item-row-title">分类 ${itemCount}</span>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="this.closest('.item-row').remove()">删除</button>
+                </div>
+                <select class="form-select" name="item_category">
                     <option value="主食">主食</option>
                     <option value="蔬菜">蔬菜</option>
                     <option value="肉类">肉类</option>
@@ -126,11 +133,9 @@
                     <option value="零食">零食</option>
                     <option value="其他">其他</option>
                 </select>
-                <input type="number" class="form-input" name="item_fist" placeholder="拳数" min="0" max="5" step="0.5" value="1" style="width: 80px;">
-                <button type="button" class="btn btn-sm btn-outline" onclick="this.parentElement.remove()">-</button>
+                <input type="number" class="form-input" name="item_fist" placeholder="拳数（0–5）" min="0" max="5" step="0.5" value="1">
             `;
             container.appendChild(div);
-            itemCount++;
         }
 
         document.querySelector('input[name="date"]').value = new Date().toISOString().split('T')[0];
