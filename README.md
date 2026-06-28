@@ -354,7 +354,7 @@ pip install -r requirements.txt
 python app.py
 
 ## 访问系统
-打开浏览器访问 http://127.0.0.1:5000
+打开浏览器访问 http://127.0.0.1:5001
 
 ## 数据文件位置
 - 食堂数据：data/cafeteria_data.csv

@@ -23,7 +23,7 @@ class DietAnalyzer:
     """
     
     # 类别热量映射 (单位: kcal/拳)
-    _CALORIE_MAP = {
+    CALORIE_MAP = {
         '主食': 200,
         '蔬菜': 50,
         '肉类': 150,
@@ -32,9 +32,10 @@ class DietAnalyzer:
         '零食': 150,
         '其他': 100,
     }
+    _CALORIE_MAP = CALORIE_MAP  # 向后兼容别名
     
     # 健康目标对应的理想营养结构占比
-    _IDEAL_STRUCTURE = {
+    IDEAL_STRUCTURE = {
         '减肥': {
             '主食': 0.30,
             '蔬菜': 0.30,
@@ -60,6 +61,7 @@ class DietAnalyzer:
             '其他': 0.05,
         },
     }
+    _IDEAL_STRUCTURE = IDEAL_STRUCTURE  # 向后兼容别名（仅 analyzer 内部使用）
     
     # 默认健康目标
     _DEFAULT_GOAL = '维持'

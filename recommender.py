@@ -14,6 +14,9 @@ recommender.py - 饮食推荐模块（角色 B）
 from datetime import datetime, date, time
 from collections import Counter
 
+# 从 analyzer 导入共享常量，避免重复定义
+from analyzer import DietAnalyzer
+
 
 class Recommender:
     """
@@ -29,44 +32,10 @@ class Recommender:
         analyzer: DietAnalyzer 实例，提供营养分析能力（可选）。
     """
 
-    # 热量映射（单位：kcal/拳）
-    CALORIE_MAP = {
-        '主食': 200,
-        '蔬菜': 50,
-        '肉类': 150,
-        '水果': 80,
-        '饮料': 100,
-        '零食': 150,
-        '其他': 100,
-    }
-
-    # 理想营养结构（与 analyzer.py 保持一致）
-    IDEAL_STRUCTURE = {
-        '减肥': {
-            '主食': 0.30,
-            '蔬菜': 0.30,
-            '肉类': 0.20,
-            '水果': 0.10,
-            '饮料/零食': 0.05,
-            '其他': 0.05,
-        },
-        '维持': {
-            '主食': 0.35,
-            '蔬菜': 0.25,
-            '肉类': 0.20,
-            '水果': 0.10,
-            '饮料/零食': 0.05,
-            '其他': 0.05,
-        },
-        '增重': {
-            '主食': 0.40,
-            '蔬菜': 0.15,
-            '肉类': 0.30,
-            '水果': 0.05,
-            '饮料/零食': 0.05,
-            '其他': 0.05,
-        },
-    }
+    # 热量映射（共享自 analyzer 模块）
+    CALORIE_MAP = DietAnalyzer.CALORIE_MAP
+    # 理想营养结构（共享自 analyzer 模块）
+    IDEAL_STRUCTURE = DietAnalyzer.IDEAL_STRUCTURE
 
     def __init__(self, db_instance, analyzer=None):
         """

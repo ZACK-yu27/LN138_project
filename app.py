@@ -359,6 +359,7 @@ def delete_record(record_id):
 def get_dashboard(user_id):
     """
     获取看板数据聚合。
+    同时自动生成最新图表，确保前端加载到最新数据。
 
     返回：
         {
@@ -374,6 +375,21 @@ def get_dashboard(user_id):
         budget = analyzer.budget_analysis(user_id)
         statistics = analyzer.meal_statistics(user_id)
         calorie_trend = analyzer.daily_calorie_trend(user_id)
+
+        # 自动生成最新图表（实时渲染，确保数据最新）
+        dashboard_data = {
+            'nutrition': nutrition,
+            'budget': budget,
+            'statistics': statistics,
+            'calorie_trend': calorie_trend,
+        }
+        if _visualizer:
+            try:
+                viz = _visualizer()
+                viz.generate_all_charts(user_id, dashboard_data)
+            except Exception:
+                pass  # 图表生成失败不影响看板数据返回
+
         return _json_response({
             'success': True,
             'nutrition': nutrition,
@@ -526,6 +542,6 @@ def internal_error(e):
 if __name__ == '__main__':
     print("=" * 60)
     print("饮食记录 & 推荐系统 - Flask 后端")
-    print("访问 http://127.0.0.1:5000")
+    print("访问 http://127.0.0.1:5001")
     print("=" * 60)
     app.run(debug=False, host='127.0.0.1', port=5001, use_reloader=False, threaded=False)

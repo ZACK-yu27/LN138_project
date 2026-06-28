@@ -108,7 +108,7 @@
                     sugDiv.innerHTML = '<p class="text-center">暂无建议</p>';
                 }
 
-                // 图表加载（尝试从 output/ 目录加载）
+                // 图表加载（后台已在 getDashboard 时自动生成最新图表）
                 const userId = currentUser.id;
                 const chartPaths = {
                     budget: `output/user_${userId}_budget_bar.png`,
