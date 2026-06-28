@@ -528,4 +528,4 @@ if __name__ == '__main__':
     print("饮食记录 & 推荐系统 - Flask 后端")
     print("访问 http://127.0.0.1:5000")
     print("=" * 60)
-    app.run(debug=True, host='127.0.0.1', port=5000)
+    app.run(debug=False, host='127.0.0.1', port=5001, use_reloader=False, threaded=False)

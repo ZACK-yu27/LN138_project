@@ -38,8 +38,10 @@ class DietDatabase:
         :param db_name: SQLite 数据库文件名，默认当前目录下 diet_db.sqlite
         """
         self.db_name = db_name
-        self.conn = sqlite3.connect(db_name)
+        self.conn = sqlite3.connect(db_name, check_same_thread=False)
         self.conn.row_factory = sqlite3.Row      # 使查询结果支持字典式访问
+        self.conn.execute("PRAGMA foreign_keys = ON")  # 启用外键约束
+        self.cursor = self.conn.cursor()
         self.cursor = self.conn.cursor()
         print("[OK] 数据库连接成功")
         self._create_all_tables()
