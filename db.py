@@ -45,6 +45,7 @@ class DietDatabase:
         self.cursor = self.conn.cursor()
         print("[OK] 数据库连接成功")
         self._create_all_tables()
+        self._load_external_data()
 
     # ------------------------------------------------------------------ #
     # 建表（PRD 4.2 节严格对应）
@@ -136,6 +137,31 @@ class DietDatabase:
 
         self.conn.commit()
         print("[OK] 五张数据表创建完成 / 已存在")
+
+    def _is_table_empty(self, table_name):
+        """检查指定表是否为空。"""
+        self.cursor.execute(f"SELECT COUNT(*) AS cnt FROM {table_name}")
+        row = self.cursor.fetchone()
+        return row['cnt'] == 0
+
+    def _load_external_data(self):
+        """
+        自动导入外部 CSV 数据到 cafeteria / nearby_shop 表。
+        仅在表为空时导入，避免重复插入。
+        """
+        try:
+            if self._is_table_empty('cafeteria'):
+                canteen_data = load_cafeteria_csv()
+                if canteen_data:
+                    self.insert_cafeteria_data(canteen_data)
+
+            if self._is_table_empty('nearby_shop'):
+                shop_data = load_shop_csv()
+                if shop_data:
+                    self.insert_shop_data(shop_data)
+        except Exception as e:
+            # 外部数据导入失败不应阻止应用启动
+            print(f"[WARN] 外部 CSV 数据导入失败: {e}")
 
     # ------------------------------------------------------------------ #
     # 用户 CRUD
