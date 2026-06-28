@@ -24,3 +24,7 @@ report/*.docx
 report/*.pdf
 *.csv.bak
 *.png.bak
+
+# Temporary / logs
+.temp/
+*.log

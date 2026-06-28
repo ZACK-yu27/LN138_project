@@ -22,6 +22,10 @@ from datetime import date, timedelta
 # 确保项目根目录在 Python 路径中
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
+# 在 Windows 终端下将 stdout 重配为 UTF-8，避免打印 emoji 时出现编码错误
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+
 from analyzer import DietAnalyzer
 from data_loader import load_cafeteria_csv, load_shop_csv
 
