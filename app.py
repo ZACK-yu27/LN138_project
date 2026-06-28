@@ -546,6 +546,12 @@ def serve_static(filename):
     return send_from_directory('static', filename)
 
 
+@app.route('/output/<path:filename>')
+def serve_output(filename):
+    """提供 output 目录下的图表/PDF 文件。"""
+    return send_from_directory('output', filename)
+
+
 # =====================================================================
 # 错误处理
 # =====================================================================

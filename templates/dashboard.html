@@ -106,10 +106,10 @@
                 // 图表加载（后台已在 getDashboard 时自动生成最新图表）
                 const userId = currentUser.id;
                 const chartPaths = {
-                    budget: `output/user_${userId}_budget_bar.png`,
-                    mealPie: `output/user_${userId}_meal_pie.png`,
-                    nutrition: `output/user_${userId}_nutrition_compare.png`,
-                    calorie: `output/user_${userId}_calorie_trend.png`
+                    budget: `/output/user_${userId}_budget_bar.png`,
+                    mealPie: `/output/user_${userId}_meal_pie.png`,
+                    nutrition: `/output/user_${userId}_nutrition_compare.png`,
+                    calorie: `/output/user_${userId}_calorie_trend.png`
                 };
 
                 loadChart('budgetChart', 'budgetFallback', chartPaths.budget);
